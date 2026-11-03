@@ -26,15 +26,17 @@ This is a template repository for your group project. One of your group members 
   - [ ] Task 3b
 - Ect.
 
+
 # Check-in
 
 There will be two check-in points where you will have a discussion with a tutor on what you have done so far and what you plan to investigate. To help make this meeting run smoothly, it is recommended that you use the space below to bullet point your key findings and your plans. You can also add here any feedback and suggestions you receive from your tutor for you to refer back to in the future.
 
 ## Check-in 1 (week 6)
 
-- item 1
-- item 2
-- etc.
+- Data chosen and viewed
+- Data cleaned
+- Histogram of House Price Values
+- Different graphs (scatterplots and box plots) of price of houses compared to features like area, year built, year sold, and year remodelled
 
 ## Check-in 2 (week 10)
 

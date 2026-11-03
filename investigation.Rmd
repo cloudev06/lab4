@@ -28,8 +28,108 @@ rawdata <- read_csv("data/ames.csv")
 View(rawdata)
 
 
-
-
 ```
 
 
+```{r data}
+# histogram with different house prices!
+ggplot(rawdata, aes(x = price)) +
+  geom_histogram(
+    binwidth = 20000,
+    fill = "lightcyan",
+    colour = "black"
+  ) +
+  scale_x_continuous(
+  labels = scales::comma,
+  breaks = seq(0, max(rawdata$price, na.rm = TRUE), by = 100000)
+) +
+  labs(
+    title = "Distribution of House Prices in Ames, Iowa",
+    x = "House Price ($)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+
+
+
+# Scatterplot graphs for relationships
+# Preparing data
+data <- rawdata %>%
+  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add) %>%
+  na.omit()
+
+options(scipen = 999)
+
+
+# Graph 1: Price vs Area
+p1 <- ggplot(data, aes(x = area, y = price)) +
+  geom_point(color = "steelblue", size = 2, alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(
+    title = "House Price vs Area",
+    x = "Area",
+    y = "House Price"
+  ) +
+  theme_minimal()
+
+print(p1)
+
+
+# Graph 2: Price vs Year Built
+p2 <- ggplot(data, aes(x = Year.Built, y = price)) +
+  geom_point(color = "darkgreen", size = 2, alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(
+    title = "House Price vs Year Built",
+    x = "Year Built",
+    y = "House Price"
+  ) +
+  theme_minimal()
+
+print(p2)
+
+
+# Graph 3: Price vs Year Sold
+p3 <- ggplot(data, aes(x = factor(Yr.Sold), y = price)) +
+  geom_boxplot(
+    fill = "purple",
+    color = "black",
+    alpha = 0.6
+  ) +
+  labs(
+    title = "House Price Distribution by Year Sold",
+    x = "Year Sold",
+    y = "House Price"
+  ) +
+  theme_minimal()
+
+print(p3)
+
+
+# Graph 4: Price vs Year Remodelled
+p4 <- ggplot(data, aes(x = Year.Remod.Add, y = price)) +
+  geom_point(color = "orange", size = 2, alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(
+    title = "House Price vs Year Remodelled",
+    x = "Year Remodelled",
+    y = "House Price"
+  ) +
+  theme_minimal()
+
+print(p4)
+
+
+# Correlations calculations
+correlations <- data %>%
+  summarise(
+    Price_Area_Cor = cor(price, area),
+    Price_Yr_Built_Cor = cor(price, Year.Built),
+    Price_Yr_Sold_Cor = cor(price, Yr.Sold),
+    Price_Yr_Remodelled_Cor = cor(price, Year.Remod.Add)
+  )
+
+print(correlations)
+
+
+```
