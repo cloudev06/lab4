@@ -1,6 +1,6 @@
 ---
 title: "IDS investigation worksheet"
-author: "by Team-Name:Jadee, Dominik, kajika, User4 & User5"
+author: "by Team-Name: Jadee, Dominik, Kajika, User4 & User5"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -24,7 +24,8 @@ library(tidyverse)
 
 
 ```{r load-data}
-# load your data 
+rawdata <- read_csv("data/ames.csv")
+View(rawdata)
 
 
 
