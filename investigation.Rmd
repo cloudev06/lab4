@@ -77,8 +77,10 @@ ggplot(rawdata, aes(x = price)) +
 # Scatterplot graphs for relationships
 # Preparing data
 data <- rawdata %>%
-  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add) %>%
+  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add, Bedroom.AbvGr) %>%
+  rename(bedrooms = Bedroom.AbvGr) %>%
   na.omit()
+
 
 options(scipen = 999)
 
@@ -140,6 +142,19 @@ p4 <- ggplot(data, aes(x = Year.Remod.Add, y = price)) +
   theme_minimal()
 
 print(p4)
+
+# Graph 5: Price vs No. of  Bedrooms
+p5 <- ggplot(data, aes(x = factor(bedrooms), y = price)) +
+  geom_boxplot(fill = "yellow", color = "red", alpha = 0.5) +
+  labs(
+    title = "House Price vs Number of Bedrooms",
+    x = "Number of Bedrooms",
+    y = "House Price"
+  ) +
+  theme_minimal()
+
+print(p5)
+
 
 
 # Correlations calculations
