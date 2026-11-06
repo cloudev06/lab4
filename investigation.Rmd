@@ -1,6 +1,6 @@
 ---
 title: "IDS investigation worksheet"
-author: "by Team-Name: Jadee, Dominik, Kajika, User4 & User5"
+author: "Team 40: Jadee, Dominik, Kajika, Dang & Myles"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -32,12 +32,32 @@ View(rawdata)
 
 
 ```{r data}
+
+# median of house prices
+median_price <- median(rawdata$price, 
+                       na.rm = TRUE)
+
+mean_price <- mean(rawdata$price,
+                   na.rm = TRUE)
+
 # histogram with different house prices!
 ggplot(rawdata, aes(x = price)) +
   geom_histogram(
     binwidth = 20000,
     fill = "lightcyan",
     colour = "black"
+  ) +
+    geom_vline(
+    xintercept = median_price,
+    colour = "red",
+    linewidth = 1,
+    linetype = "dashed"
+  ) +
+    geom_vline(
+    xintercept = mean_price,
+    colour = "orange",
+    linewidth = 1,
+    linetype = "dashed"
   ) +
   scale_x_continuous(
   labels = scales::comma,
@@ -50,7 +70,9 @@ ggplot(rawdata, aes(x = price)) +
   ) +
   theme_minimal()
 
-
+# analysis - graph is positively skewed. Mean > Median > Mode
+# this means that most house prices are below the mean
+# this means that most people earn moderate amounts but a few earn very high incomes
 
 # Scatterplot graphs for relationships
 # Preparing data
