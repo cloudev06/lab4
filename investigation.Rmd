@@ -33,6 +33,16 @@ View(rawdata)
 
 ```{r data}
 
+# Preparing data
+data <- rawdata %>%
+  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add, Bedroom.AbvGr) %>%
+  rename(bedrooms = Bedroom.AbvGr) %>%
+  na.omit()
+
+
+options(scipen = 999)
+
+
 # median of house prices
 median_price <- median(rawdata$price, 
                        na.rm = TRUE)
@@ -40,8 +50,10 @@ median_price <- median(rawdata$price,
 mean_price <- mean(rawdata$price,
                    na.rm = TRUE)
 
-# histogram with different house prices!
-ggplot(rawdata, aes(x = price)) +
+
+
+# histogram with different house prices and number of bedrooms
+ggplot(data, aes(x = price)) +
   geom_histogram(
     binwidth = 20000,
     fill = "lightcyan",
@@ -59,9 +71,9 @@ ggplot(rawdata, aes(x = price)) +
     linewidth = 1,
     linetype = "dashed"
   ) +
-  scale_x_continuous(
+ scale_x_continuous(
   labels = scales::comma,
-  breaks = seq(0, max(rawdata$price, na.rm = TRUE), by = 100000)
+  breaks = seq(0, max(data$price, na.rm = TRUE), by = 100000)
 ) +
   labs(
     title = "Distribution of House Prices in Ames, Iowa",
@@ -74,16 +86,20 @@ ggplot(rawdata, aes(x = price)) +
 # this means that most house prices are below the mean
 # this means that most people earn moderate amounts but a few earn very high incomes
 
+ggplot(data, aes(x = bedrooms)) +
+  geom_histogram(
+    fill = "darkcyan",
+    colour = "black"
+  ) +
+  labs(
+    title = "Number of Bedrooms in Houses in Ames, Iowa",
+    x = "Number of Bedrooms per House",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+
+
 # Scatterplot graphs for relationships
-# Preparing data
-data <- rawdata %>%
-  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add, Bedroom.AbvGr) %>%
-  rename(bedrooms = Bedroom.AbvGr) %>%
-  na.omit()
-
-
-options(scipen = 999)
-
 
 # Graph 1: Price vs Area
 p1 <- ggplot(data, aes(x = area, y = price)) +
@@ -155,15 +171,14 @@ p5 <- ggplot(data, aes(x = factor(bedrooms), y = price)) +
 
 print(p5)
 
-
-
 # Correlations calculations
 correlations <- data %>%
   summarise(
     Price_Area_Cor = cor(price, area),
     Price_Yr_Built_Cor = cor(price, Year.Built),
     Price_Yr_Sold_Cor = cor(price, Yr.Sold),
-    Price_Yr_Remodelled_Cor = cor(price, Year.Remod.Add)
+    Price_Yr_Remodelled_Cor = cor(price, Year.Remod.Add),
+    Price_Bedrooms = cor(price, bedrooms)
   )
 
 print(correlations)
