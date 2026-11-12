@@ -25,11 +25,9 @@ library(tidyverse)
 
 ```{r load-data}
 rawdata <- read_csv("data/ames.csv")
-View(rawdata)
 
 
 ```
-
 
 ```{r data}
 
@@ -37,48 +35,58 @@ View(rawdata)
 data <- rawdata %>%
   select(price, area, Year.Built, Yr.Sold, Year.Remod.Add, Bedroom.AbvGr) %>%
   rename(bedrooms = Bedroom.AbvGr) %>%
+  mutate(
+    Remod.Year.Vs.Year.Sold = Yr.Sold - Year.Remod.Add,
+    Remod.Year.Vs.Year.Built = Year.Remod.Add - Year.Built,
+    If.Remodelled = case_when(
+      Remod.Year.Vs.Year.Built == 0 ~ "No",
+      Remod.Year.Vs.Year.Built > 0 ~ "Yes"
+    )
+  ) %>%
   na.omit()
-
 
 options(scipen = 999)
 
+# medans and medians
+median_price <- median(data$price)
+mean_price <- mean(data$price)
+sd_price <- sd(data$price)
+median_bedrooms <- median(data$bedrooms)
+mean_bedrooms <- mean(data$bedrooms)
+median_area <- median(data$area)
+mean_area <- mean(data$area)
+sd_area <- sd(data$area)
 
-# median of house prices
-median_price <- median(rawdata$price, 
-                       na.rm = TRUE)
-
-mean_price <- mean(rawdata$price,
-                   na.rm = TRUE)
 
 
+#graphs
 
-# histogram with different house prices and number of bedrooms
+# house prices density plot
 ggplot(data, aes(x = price)) +
-  geom_histogram(
-    binwidth = 20000,
-    fill = "lightcyan",
-    colour = "black"
+  geom_density(
+    fill = "lightblue",
+    alpha = 0.6
   ) +
-    geom_vline(
+  labs(
+    title = "Density Distribution of House Prices",
+    x = "House Price ($)",
+    y = "Density"
+  ) +
+      geom_vline(
     xintercept = median_price,
-    colour = "red",
+    colour = "red", # median is red!!
     linewidth = 1,
     linetype = "dashed"
   ) +
     geom_vline(
     xintercept = mean_price,
-    colour = "orange",
+    colour = "orange", # mean is orange 
     linewidth = 1,
     linetype = "dashed"
   ) +
- scale_x_continuous(
-  labels = scales::comma,
-  breaks = seq(0, max(data$price, na.rm = TRUE), by = 100000)
-) +
-  labs(
-    title = "Distribution of House Prices in Ames, Iowa",
-    x = "House Price ($)",
-    y = "Frequency"
+    scale_x_continuous(
+    breaks = seq(0, max(data$price), by = 100000),
+    labels = scales::comma
   ) +
   theme_minimal()
 
@@ -86,10 +94,17 @@ ggplot(data, aes(x = price)) +
 # this means that most house prices are below the mean
 # this means that most people earn moderate amounts but a few earn very high incomes
 
+# histogram for bedrooms per house in ames, iowa
 ggplot(data, aes(x = bedrooms)) +
   geom_histogram(
     fill = "darkcyan",
     colour = "black"
+  ) +
+  geom_vline(
+    xintercept = mean_bedrooms,
+    colour = "orange", # orange is the mean of data, else is median
+    linetype = "dashed",
+    linewidth = 1
   ) +
   labs(
     title = "Number of Bedrooms in Houses in Ames, Iowa",
@@ -98,6 +113,30 @@ ggplot(data, aes(x = bedrooms)) +
   ) +
   theme_minimal()
 
+# area of different houses
+ggplot(data, aes(x = area)) +
+  geom_histogram(
+    fill = "darkturquoise",
+    colour = "black"
+  ) +
+    geom_vline(
+    xintercept = median_area,
+    colour = "red", # median is red!!
+    linewidth = 1,
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = mean_area,
+    colour = "orange", # orange is the mean of data, else is median
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  labs(
+    title = "Area of Houses in Ames, Iowa",
+    x = "Area",
+    y = "Frequency"
+  ) +
+  theme_minimal()
 
 # Scatterplot graphs for relationships
 
@@ -147,12 +186,18 @@ print(p3)
 
 
 # Graph 4: Price vs Year Remodelled
-p4 <- ggplot(data, aes(x = Year.Remod.Add, y = price)) +
-  geom_point(color = "orange", size = 2, alpha = 0.5) +
-  geom_smooth(method = "lm", se = TRUE, color = "red") +
+p4 <- ggplot(data %>% 
+               filter(If.Remodelled == "Yes"),
+  aes(x = Remod.Year.Vs.Year.Built, 
+      y = price)) +
+  geom_point(color = "orange", 
+             size = 2, 
+             alpha = 0.5) +
+  geom_smooth(method = "lm",
+              color = "red") +
   labs(
-    title = "House Price vs Year Remodelled",
-    x = "Year Remodelled",
+    title = "House Price vs Years Between Building and Remodelling",
+    x = "Years Between Building and Remodelling",
     y = "House Price"
   ) +
   theme_minimal()
@@ -160,8 +205,13 @@ p4 <- ggplot(data, aes(x = Year.Remod.Add, y = price)) +
 print(p4)
 
 # Graph 5: Price vs No. of  Bedrooms
-p5 <- ggplot(data, aes(x = factor(bedrooms), y = price)) +
-  geom_boxplot(fill = "yellow", color = "red", alpha = 0.5) +
+p5 <- ggplot(data, 
+             aes(x = factor(bedrooms), 
+                 y = price)
+             ) +
+  geom_boxplot(fill = "yellow", 
+               color = "red", 
+               alpha = 0.5) +
   labs(
     title = "House Price vs Number of Bedrooms",
     x = "Number of Bedrooms",
@@ -171,6 +221,57 @@ p5 <- ggplot(data, aes(x = factor(bedrooms), y = price)) +
 
 print(p5)
 
+# area vs number of bedrooms
+p6 <- ggplot(data, 
+             aes(x = factor(bedrooms), 
+                 y = area)
+             ) +
+  geom_boxplot(fill = "pink", 
+               color = "red", 
+               alpha = 0.5) +
+  labs(
+    title = "House Area vs Number of Bedrooms",
+    x = "Number of Bedrooms",
+    y = "Area"
+  ) +
+  theme_minimal()
+
+print(p6)
+
+# Graph 7: Price vs Years Between Remodelling and Year Sold
+p7 <- ggplot(data %>% 
+               filter(If.Remodelled == "Yes"),
+             aes(x = Remod.Year.Vs.Year.Sold, 
+                 y = price)) +
+  geom_point(color = "plum", 
+             size = 2, 
+             alpha = 0.5) +
+  geom_smooth(method = "lm",
+              color = "red") +
+  labs(
+    title = "House Price vs Years Between Remodelling and Sale",
+    x = "Years Between Remodelling and Sale",
+    y = "House Price"
+  ) +
+  theme_minimal()
+
+print(p7)
+
+# Graph 8: Comparing if houses have or haven't been remodelled
+
+p8 <- ggplot(data, aes(x = If.Remodelled, 
+                 y = price)) +
+  geom_boxplot(fill = "darkmagenta") +
+  labs(
+    title = "House Prices: Remodelled vs Not Remodelled",
+    x = "Has the House Been Remodelled?",
+    y = "House Price"
+  ) +
+  theme_minimal()
+
+print(p8)
+```
+``` {r stats}
 # Correlations calculations
 correlations <- data %>%
   summarise(
@@ -178,10 +279,39 @@ correlations <- data %>%
     Price_Yr_Built_Cor = cor(price, Year.Built),
     Price_Yr_Sold_Cor = cor(price, Yr.Sold),
     Price_Yr_Remodelled_Cor = cor(price, Year.Remod.Add),
-    Price_Bedrooms = cor(price, bedrooms)
+    Price_Bedrooms = cor(price, bedrooms),
+    Price_Btwn_Remod_Built_Cor = cor(price, Remod.Year.Vs.Year.Built),
+    Price_Btwn_Remod_Sale_Cor = cor(price, Remod.Year.Vs.Year.Sold)
   )
 
 print(correlations)
 
+#other stats
+stats <- data %>%
+  summarise(
+    mean_price,
+    median_price,
+    sd_price,
+    mean_bedrooms,
+    median_bedrooms,
+    mean_area,
+    median_area,
+    sd_area
+  )
+
+# y-intercept and gradients *key for report*
+# The regression analysis shows a ___itive relationship between...
+
+# Price vs Area
+summary(lm(price ~ area, data = data))
+# gradient = ~111.7, y-intercept = ~13,290, R^2 = ~0.4995
+
+# Price vs Year Built
+summary(lm(price ~ Year.Built, data = data))
+# gradient = ~1475, y-intercept = ~-2,727,000, R^2 = ~0.3118
+
+# Price vs Year Remodelled
+summary(lm(price ~ Year.Remod.Add, data = data))
+# gradient = ~2,041, y-intercept = ~3,869,000, R^2 = ~0.2841
 
 ```
