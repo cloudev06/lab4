@@ -33,8 +33,9 @@ rawdata <- read_csv("data/ames.csv")
 
 # Preparing data
 data <- rawdata %>%
-  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add, Bedroom.AbvGr) %>%
+  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add, Bedroom.AbvGr, Overall.Qual, Overall.Cond, Garage.Cars, Fireplaces, Kitchen.AbvGr, Full.Bath, Half.Bath) %>%
   rename(bedrooms = Bedroom.AbvGr) %>%
+  rename(kitchens = Kitchen.AbvGr) %>%
   mutate(
     Remod.Year.Vs.Year.Sold = Yr.Sold - Year.Remod.Add,
     Remod.Year.Vs.Year.Built = Year.Remod.Add - Year.Built,
@@ -42,6 +43,9 @@ data <- rawdata %>%
       Remod.Year.Vs.Year.Built == 0 ~ "No",
       Remod.Year.Vs.Year.Built > 0 ~ "Yes"
     )
+  ) %>%
+  mutate(
+    bathrooms = Full.Bath + (0.5 * Half.Bath)
   ) %>%
   na.omit()
 
@@ -270,6 +274,7 @@ p8 <- ggplot(data, aes(x = If.Remodelled,
   theme_minimal()
 
 print(p8)
+
 ```
 ``` {r stats}
 # Correlations calculations
@@ -314,4 +319,29 @@ summary(lm(price ~ Year.Built, data = data))
 summary(lm(price ~ Year.Remod.Add, data = data))
 # gradient = ~2,041, y-intercept = ~3,869,000, R^2 = ~0.2841
 
+# All data altogether
+summary(lm(price ~ area + bedrooms + Overall.Qual + Overall.Cond + kitchens + bathrooms, 
+           data = data))
+# analysis: 
+# using a 5% significance level we can see overall condition and number of bathrooms is insignificant
+# each extra unit of area adds ~$74.23
+# each extra bedroom lowers price by about $11,858 (maybe bc model already accounts for overall area? For houses of same area, having more bedrooms could indicate smaller individual rooms.)
+# each 1 point increase in quality adds $29,397 (strongest effect as t = ~39.94). t is estimate / std error aka how many standard errors the coefficient is away from 0
+# overall condition has a -57.95 coefficient. But p value is 0.933 which is considearbly higher than 0.05 there is insufficient statistical evidence to suggest that overall condition has an independent relationship with house prices after controlling for the other variables.
+# kitchen coefficient is -$24,227. hmm weird
+# bathrooms is +$2,084 where +1 bathroom is full bathroom and +0.5 bathroom is a half bathroom. (so like toilet only). 
+# intercept isnt meaningful as it is -$53,876. a house will never have no area and no bedrooms and no... etc.
+# R^2 = 0.7469: six independent variables together explain about 74.69% of variation in price. remaining 25.31% is unexplained by model and may be influenced by other factors like location.
+# Residual standard error = 40,240 so predictions are typically off by about $40,240
+
+# Price = -53,876.395 + 74.229(Area) - 11,857.795(Bedrooms) + 29,396.574(Overall Quality) - 57.951(Overall Condition) - 24,226.913(Kitchens) + 2,084.198(Bathrooms)
+
+# all data together only with variables that are significant:
+summary(lm(price ~ area + bedrooms + Overall.Qual + kitchens,
+           data = data))
+# new regression equation
+# Price = -55,321.418 + 75.493(Area) - 11,667.601(Bedrooms) + 29,676.702(Overall Quality) - 23,616.444(Kitchens)
+# R^2 = 0.7468: The model explains 74.68% of the variation in house prices.
+# RSE (residual standard error) = 40,240
+# Yay!
 ```
