@@ -156,7 +156,7 @@ p1 <- ggplot(data, aes(x = area, y = price)) +
   theme_minimal()
 
 print(p1)
-
+# conical relation?
 
 # Graph 2: Price vs Year Built
 p2 <- ggplot(data, aes(x = Year.Built, y = price)) +
