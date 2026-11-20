@@ -34,7 +34,7 @@ rawdata <- read_csv("data/ames.csv")
 
 # Preparing data
 data <- rawdata %>%
-  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add, Bedroom.AbvGr, Overall.Qual, Overall.Cond, Garage.Cars, Fireplaces, Kitchen.AbvGr, Full.Bath, Half.Bath) %>%
+  select(price, area, Year.Built, Yr.Sold, Year.Remod.Add, Bedroom.AbvGr, Overall.Qual, Overall.Cond, Garage.Cars, Fireplaces, Kitchen.AbvGr, Full.Bath, Half.Bath) %>% # only desired variables
   rename(bedrooms = Bedroom.AbvGr) %>%
   rename(kitchens = Kitchen.AbvGr) %>%
   mutate(
@@ -43,11 +43,11 @@ data <- rawdata %>%
     If.Remodelled = case_when(
       Remod.Year.Vs.Year.Built == 0 ~ "No",
       Remod.Year.Vs.Year.Built > 0 ~ "Yes"
-    )
+    ) # this adds a new category on whether the house ever had renovations
   ) %>%
   mutate(
     bathrooms = Full.Bath + (0.5 * Half.Bath)
-  ) %>%
+  ) %>% # half bathrooms are bathrooms which only have toilets etc. this new category just makes it one.
   na.omit()
 
 options(scipen = 999)
