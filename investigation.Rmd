@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load-lib, message = FALSE}
 library(tidyverse)
+library(tidymodels)
 # Add any other libraries here
 
 
@@ -324,7 +325,7 @@ summary(lm(price ~ area + bedrooms + Overall.Qual + Overall.Cond + kitchens + ba
            data = data))
 # analysis: 
 # using a 5% significance level we can see overall condition and number of bathrooms is insignificant
-# each extra unit of area adds ~$74.23
+# each extra unit of area adds ~$74.23 when everything every other explanatory variable held constant
 # each extra bedroom lowers price by about $11,858 (maybe bc model already accounts for overall area? For houses of same area, having more bedrooms could indicate smaller individual rooms.)
 # each 1 point increase in quality adds $29,397 (strongest effect as t = ~39.94). t is estimate / std error aka how many standard errors the coefficient is away from 0
 # overall condition has a -57.95 coefficient. But p value is 0.933 which is considearbly higher than 0.05 there is insufficient statistical evidence to suggest that overall condition has an independent relationship with house prices after controlling for the other variables.
@@ -337,11 +338,29 @@ summary(lm(price ~ area + bedrooms + Overall.Qual + Overall.Cond + kitchens + ba
 # Price = -53,876.395 + 74.229(Area) - 11,857.795(Bedrooms) + 29,396.574(Overall Quality) - 57.951(Overall Condition) - 24,226.913(Kitchens) + 2,084.198(Bathrooms)
 
 # all data together only with variables that are significant:
-summary(lm(price ~ area + bedrooms + Overall.Qual + kitchens,
-           data = data))
+final_lm <- lm(price ~ area + bedrooms + Overall.Qual + kitchens,
+           data = data)
+summary(final_lm)
 # new regression equation
 # Price = -55,321.418 + 75.493(Area) - 11,667.601(Bedrooms) + 29,676.702(Overall Quality) - 23,616.444(Kitchens)
 # R^2 = 0.7468: The model explains 74.68% of the variation in house prices.
 # RSE (residual standard error) = 40,240
 # Yay!
+```
+``` {r}
+
+resid <- augment(final_lm, data = data)
+
+# graph with fitted values on x-axis, residuals on y-axis
+ggplot(resid, aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(x = "Fitted values", y = "Residuals")
+
+# histogram of number of residuals
+ggplot(resid, aes(x = .resid)) +
+  geom_histogram(bins = 25) +
+  scale_x_continuous(breaks = scales::breaks_width(100000))
+  labs(x = "Residuals")
+
 ```
