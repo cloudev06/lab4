@@ -52,7 +52,7 @@ style_xaringan(
 
 class: center, middle
 
-## How Different Variables Affect the House Prices in Ames, Iowa
+## How Much Different Variables Affect the House Prices in Ames, Iowa
 
 ---
 
