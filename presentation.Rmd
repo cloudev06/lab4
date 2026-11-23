@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "How Variables Affect House Prices in Iowa, Ames"
 subtitle: " "
 author: "Team 40 <br> Jadee, Dominik, Kajika, Dang & Myles"
 institute: "University of Edinburgh"
@@ -39,8 +39,7 @@ knitr::opts_chunk$set(fig.retina = 3, dpi = 300, fig.width = 6, fig.asp = 0.618,
 ```
 
 ```{r load-data, include=FALSE}
-# Load your data here
-
+rawdata <- read_csv("data/ames.csv")
 ```
 
 ```{r include=FALSE}
