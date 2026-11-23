@@ -15,6 +15,9 @@ class: center, middle, inverse, title-slide
 .title[
 # What affects House Prices in Ames
 ]
+.subtitle[
+## IDS Group Project
+]
 .author[
 ### Team 40 <br> Jadee, Dominik, Kajika, Dang &amp; Myles
 ]
@@ -39,224 +42,287 @@ class: center, middle, inverse, title-slide
 
 
 
+
 class: center, middle
 
-## How Different Variables Affect the House Prices in Ames, Iowa
+## How much do different features of a house affect its sale price in Ames, Iowa?
+
+---
+
+# Our question
+
+.pull-left[
+**Which characteristics of a house best explain its sale price?**
+
+We looked at:
+
+- **Size**: living area, bedrooms, bathrooms, kitchens
+- **Age**: year built, year sold
+- **Renovation**: whether and when the house was remodelled
+- **Quality**: overall quality and condition ratings (1 to 10)
+]
+
+.pull-right[
+Our approach:
+
+1. Explore each variable against price
+2. Fit a multiple linear regression
+3. Keep only the significant predictors
+4. Check the model with its residuals
+]
+
+---
+
+# The data
+
+- Ames Housing data: **2,928 house sales** in Ames, Iowa (2006 to 2010), after removing rows with missing values
+
+- **Response:** `price`, the sale price in US dollars
+
+- **Variables we created:**
+  - `bathrooms` = full baths + 0.5 × half baths (a half bath has a toilet and sink but no bath or shower)
+  - `If.Remodelled`: "Yes" if the remodel year differs from the build year
+  - Years between building and remodelling, and between remodelling and sale
+
+---
+
+# How are house prices distributed?
+
+.pull-left[
+&lt;img src="presentation_files/figure-html/price-density-1.png" alt="" width="100%" /&gt;
+]
+
+.pull-right[
+- Median price: **$160,000**
+- Mean price: **$180,799**
+- Standard deviation: $79,911
+
+&lt;br&gt;
+
+Prices are **right-skewed**: most houses sell for moderate prices, while a small number of very expensive houses pull the mean above the median.
+]
+
+---
+
+# Reading the numbers: correlation (r)
+
+.pull-left[
+The **correlation coefficient r** measures how closely two variables follow a straight line.
+
+- It runs from **-1 to +1**
+- **+1**: perfect positive link (one goes up, the other goes up)
+- **-1**: perfect negative link
+- **0**: no straight-line link at all
+- Rough guide: about 0.1 is weak, 0.3 moderate, 0.5 or more strong
+]
+
+.pull-right[
+**r tells us about association, not cause.** A high r does not prove that one thing causes the other.
+
+r only captures *straight-line* patterns, and outliers can push it up or down.
+
+**R²** (used in our model) is closely linked: with one predictor, R² = r². It is the share of the variation in price that the model explains.
+]
+
+---
+
+# Bigger houses sell for more
+
+.pull-left[
+&lt;img src="presentation_files/figure-html/price-area-1.png" alt="" width="100%" /&gt;
+]
+
+.pull-right[
+- Strongest single relationship we found: correlation **r = 0.71**
+
+- On its own, area explains about **50%** of the variation in price
+
+- Spread gets wider for larger houses (a "cone" shape), so big houses are harder to predict
+]
+
+---
+
+# Newer and renovated houses sell for more
+
+.pull-left[
+&lt;img src="presentation_files/figure-html/price-built-1.png" alt="" width="100%" /&gt;
+- Year built: r = 0.56
+- Year of last remodel: r = 0.53
+]
+
+.pull-right[
+&lt;img src="presentation_files/figure-html/price-remodelled-1.png" alt="" width="100%" /&gt;
+- Both age variables have weaker links to price than area
+]
+
+---
+
+# Do more bedrooms mean a higher price?
+
+.pull-left[
+&lt;img src="presentation_files/figure-html/price-bedrooms-1.png" alt="" width="100%" /&gt;
+]
+
+.pull-right[
+- Price barely rises with bedrooms: **r = 0.14**, a weak positive link
+
+- But bedrooms and living area move together (r = 0.52): houses with more bedrooms tend to be bigger
+
+- So some of the "bedroom effect" is really a size effect. This matters for the model later.
+]
 
 ---
 
 class: inverse, center, middle
 
-# Section title
+# Putting it together: multiple regression
 
 ---
 
-# Hello World
-
-- Click the `Knit` button to compile your presentation
-
-- Make sure to commit and push all resulting files to your GitHub repo
-
----
-
-class: inverse, middle, center
-
-# Using xaringan
-
----
-
-# xaringan
-
-- The presentation is created using the `xaringan` package
-
-- Use `---` to separate slides and `--` for incremental builds
-
---
-
-- Like this
-
----
-
-# Layouts
-
-You can use plain text
-
-- or bullet points
+# Reading the numbers: p-values
 
 .pull-left[
-or text in two columns `\(^*\)`
+Each coefficient in a regression comes with a **p-value**.
+
+- We start by assuming the variable has **no effect** on price once the others are accounted for (the *null hypothesis*)
+- The p-value is the chance of seeing an effect at least as big as ours **if that assumption were true**
+- **Small p-value** = our result would be very unlikely if there were no real effect
 ]
+
 .pull-right[
-- like
-- this
-]
+We use a **5% significance level**:
 
-.footnote[
-[*] And add footnotes
-]
+- **p &lt; 0.05**: evidence of a real relationship, so we keep the variable
+- **p ≥ 0.05**: not enough evidence, so we drop it
 
----
+For example, overall condition had **p = 0.933**, so there is no evidence it affects price once size and quality are known.
 
-# Code
-
-
-``` r
-# a boring regression
-model &lt;- lm(dist ~ speed, data = cars)
-tidy(model)
-```
-
-```
-## # A tibble: 2 × 5
-##   term        estimate std.error statistic  p.value
-##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 (Intercept)   -17.6      6.76      -2.60 1.23e- 2
-## 2 speed           3.93     0.416      9.46 1.49e-12
-```
-
-``` r
-glance(model)
-```
-
-```
-## # A tibble: 1 × 12
-##   r.squared adj.r.squared sigma statistic  p.value    df logLik   AIC   BIC
-##       &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1     0.651         0.644  15.4      89.6 1.49e-12     1  -207.  419.  425.
-## # ℹ 3 more variables: deviance &lt;dbl&gt;, df.residual &lt;int&gt;, nobs &lt;int&gt;
-```
-
----
-
-# Plots
-
-
-
-&lt;img src="presentation_files/figure-html/plot-iris-1.png" alt="" width="80%" /&gt;
-
----
-
-## Plot and text
-
-.pull-left[
-- Some text
-- goes here
-]
-.pull-right[
-&lt;img src="presentation_files/figure-html/unnamed-chunk-2-1.png" alt="" width="100%" /&gt;
+A p-value does **not** tell us how *big* or how *important* an effect is. That comes from the coefficient.
 ]
 
 ---
 
-# Tables
+# Our final model
 
-If you want to generate a table, make sure it is in the HTML format (instead of Markdown or other formats), e.g.,
+We started with area, bedrooms, overall quality, overall condition, kitchens and bathrooms. **Overall condition and bathrooms were not significant** at the 5% level, so we dropped them.
 
 &lt;table&gt;
  &lt;thead&gt;
   &lt;tr&gt;
-   &lt;th style="text-align:right;"&gt; Sepal.Length &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; Sepal.Width &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; Petal.Length &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; Petal.Width &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; Species &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Term &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Estimate ($) &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Std. error &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; t &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; p-value &lt;/th&gt;
   &lt;/tr&gt;
  &lt;/thead&gt;
 &lt;tbody&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5.1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.5 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Intercept &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -55321.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5753.6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -9.62 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 4.9 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Area (per sq ft) &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 75.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 33.80 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 4.7 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.2 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bedrooms &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -11667.6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1121.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -10.41 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 4.6 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.5 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Overall quality (per point) &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 29676.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 698.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 42.52 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5.0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.6 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5.4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.9 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.7 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.4 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Kitchens &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -23616.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3673.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -6.43 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 
----
+&lt;br&gt;
 
-# Images
-
-&lt;div class="figure" style="text-align: center"&gt;
-&lt;img src="img/edinburgh-castle.jpg" alt="Image credit: Photo by Jörg Angeli on Unsplash." width="55%" /&gt;
-&lt;p class="caption"&gt;Image credit: Photo by Jörg Angeli on Unsplash.&lt;/p&gt;
-&lt;/div&gt;
-
-Or you can also include a full page image. See next slide.
+**R² = 0.747**: the model explains about **75%** of the variation in price (the full six-variable model gave 0.747, so the dropped variables added almost nothing).
 
 ---
 
+# What the coefficients tell us
+
+Holding the other variables constant:
+
+- **Overall quality** is the strongest effect: each extra point adds about **$29,677** (t ≈ 42.5)
+
+- **Area**: each extra square foot adds about **$75.49**
+
+- **Bedrooms**: each extra bedroom *lowers* the price by about **$11,668**
+
+- **Kitchens**: each extra kitchen *lowers* the price by about **$23,616**
+
+--
+
+**Why negative?** The model already controls for area. For two houses of the *same size*, more bedrooms means smaller rooms. A second kitchen often signals a house split into flats or an older conversion, which buyers may value less.
+
+The intercept (-$55,321) has no real meaning, since no house has zero area.
+
+---
+
+# Checking the model
+
+.pull-left[
+&lt;img src="presentation_files/figure-html/resid-fitted-1.png" alt="" width="100%" /&gt;
+]
+
+.pull-right[
+&lt;img src="presentation_files/figure-html/resid-hist-1.png" alt="" width="100%" /&gt;
+]
+
+- Residuals are centred on zero and roughly symmetric, but **spread out more for expensive houses**
+- Typical prediction error (residual standard error): about **$40,240**
+
+---
+
+# Conclusions and limitations
+
+.pull-left[
+### What we found
+
+- **Quality and size** drive house prices in Ames most strongly
+- Together, area, bedrooms, quality and kitchens explain about **75%** of price variation
+- Newer and remodelled houses sell for more, but less strongly than size
+- More bedrooms or kitchens *at the same size* go with lower prices
+]
+
+.pull-right[
+### Limitations
+
+- **Location** (neighbourhood) was not included and likely explains much of the remaining ~25%
+- Wider spread for expensive houses: a log-price model might fit better
+- Bedrooms and area are correlated, which makes their separate effects harder to read
+- One town, sales from 2006 to 2010 only: results may not generalise
+]
+
+---
 
 class: inverse, center, middle
-background-image: url(img/edinburgh-castle.jpg)
-background-size: contain
----
 
-# Math Expressions
+# Thank you!
 
-You can write LaTeX math expressions inside a pair of dollar signs, e.g. &amp;#36;\alpha+\beta$ renders `\(\alpha+\beta\)`. You can use the display style with double dollar signs:
-
-```
-$$\bar{X}=\frac{1}{n}\sum_{i=1}^nX_i$$
-```
-
-`$$\bar{X}=\frac{1}{n}\sum_{i=1}^nX_i$$`
-
-Limitations:
-
-1. The source code of a LaTeX math expression must be in one line, unless it is inside a pair of double dollar signs, in which case the starting `$$` must appear in the very beginning of a line, followed immediately by a non-space character, and the ending `$$` must be at the end of a line, led by a non-space character;
-
-1. There should not be spaces after the opening `$` or before the closing `$`.
-
-1. Math does not work on the title slide (see [#61](https://github.com/yihui/xaringan/issues/61) for a workaround).
-
----
-
-# Feeling adventurous?
-
-- Want to find out more about `xaringan`? See https://slides.yihui.name/xaringan/#1.
-
-- You are welcome to use the default styling of the slides. In fact, that's what I expect majority of you will do. You will differentiate yourself with the content of your presentation.
-
-- But some of you might want to play around with slide styling. The 
-`xaringanthemer` provides some solutions for this that: https://pkg.garrickadenbuie.com/xaringanthemer.
-
-- And if you want more bells and whistles, there is also `xaringanExtra`: https://pkg.garrickadenbuie.com/xaringanExtra.
+## Questions?
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
