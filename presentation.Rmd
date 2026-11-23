@@ -1,5 +1,5 @@
 ---
-title: "How Variables Affect House Prices in Iowa, Ames"
+title: "What affects House Prices in Ames"
 subtitle: " "
 author: "Team 40 <br> Jadee, Dominik, Kajika, Dang & Myles"
 institute: "University of Edinburgh"
@@ -52,7 +52,7 @@ style_xaringan(
 
 class: center, middle
 
-## A statement of the overall goal / research question
+## How Different Variables Affect the House Prices in Ames, Iowa
 
 ---
 
