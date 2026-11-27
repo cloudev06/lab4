@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>What affects House Prices in Ames</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Team 40   Jadee, Dominik, Kajika, Dang &amp; Myles" />
+    <meta name="date" content="2026-11-27" />
+    <script src="libs/header-attrs-2.32/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# What affects House Prices in Ames
+]
+.subtitle[
+## IDS Group Project
+]
+.author[
+### Team 40 <br> Jadee, Dominik, Kajika, Dang &amp; Myles
+]
+.institute[
+### University of Edinburgh
+]
+.date[
+### 2026-11-27
+]
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class: center, middle
+
+## How much do different features of a house affect its sale price in Ames, Iowa?
+
+---
+
+# Our question
+
+.pull-left[
+**Which characteristics of a house best explain its sale price?**
+
+We looked at:
+
+- **Size**: living area, bedrooms, bathrooms, kitchens
+- **Age**: year built, year sold
+- **Renovation**: whether and when the house was remodelled
+- **Quality**: overall quality and condition ratings (1 to 10)
+]
+
+.pull-right[
+Our approach:
+
+1. Explore each variable against price
+2. Fit a multiple linear regression
+3. Keep only the significant predictors
+4. Check the model with its residuals
+]
+
+---
+
+# The data
+
+- Ames Housing data: **2,928 house sales** in Ames, Iowa (2006 to 2010), after removing rows with missing values
+
+- **Response:** `price`, the sale price in US dollars
+
+- **Variables we created:**
+  - `bathrooms` = full baths + 0.5 × half baths (a half bath has a toilet and sink but no bath or shower)
+  - `If.Remodelled`: "Yes" if the remodel year differs from the build year
+  - Years between building and remodelling, and between remodelling and sale
+
+---
+
+# How are house prices distributed?
+
+.pull-left[
+&lt;img src="real-presentation_files/figure-html/price-density-1.png" alt="" width="100%" /&gt;
+]
+
+.pull-right[
+- Median price: **$160,000**
+- Mean price: **$180,799**
+- Standard deviation: $79,911
+
+&lt;br&gt;
+
+Prices are **right-skewed**: most houses sell for moderate prices, while a small number of very expensive houses pull the mean above the median.
+]
+
+---
+
+# Reading the numbers: correlation (r)
+
+.pull-left[
+The **correlation coefficient r** measures how closely two variables follow a straight line.
+
+- It runs from **-1 to +1**
+- **+1**: perfect positive link (one goes up, the other goes up)
+- **-1**: perfect negative link
+- **0**: no straight-line link at all
+- Rough guide: about 0.1 is weak, 0.3 moderate, 0.5 or more strong
+]
+
+.pull-right[
+**r tells us about association, not cause.** A high r does not prove that one thing causes the other.
+
+r only captures *straight-line* patterns, and outliers can push it up or down.
+
+**R²** (used in our model) is closely linked: with one predictor, R² = r². It is the share of the variation in price that the model explains.
+]
+
+---
+
+# Bigger houses sell for more
+
+.pull-left[
+&lt;img src="real-presentation_files/figure-html/price-area-1.png" alt="" width="100%" /&gt;
+]
+
+.pull-right[
+- Strongest single relationship we found: correlation **r = 0.71**
+
+- On its own, area explains about **50%** of the variation in price
+
+- Spread gets wider for larger houses (a "cone" shape), so big houses are harder to predict
+]
+
+---
+
+# Newer and renovated houses sell for more
+
+.pull-left[
+&lt;img src="real-presentation_files/figure-html/price-built-1.png" alt="" width="100%" /&gt;
+- Year built: r = 0.56
+- Year of last remodel: r = 0.53
+]
+
+.pull-right[
+&lt;img src="real-presentation_files/figure-html/price-remodelled-1.png" alt="" width="100%" /&gt;
+- Both age variables have weaker links to price than area
+]
+
+---
+
+# Do more bedrooms mean a higher price?
+
+.pull-left[
+&lt;img src="real-presentation_files/figure-html/price-bedrooms-1.png" alt="" width="100%" /&gt;
+]
+
+.pull-right[
+- Price barely rises with bedrooms: **r = 0.14**, a weak positive link
+
+- But bedrooms and living area move together (r = 0.52): houses with more bedrooms tend to be bigger
+
+- So some of the "bedroom effect" is really a size effect. This matters for the model later.
+]
+
+---
+
+class: inverse, center, middle
+
+# Putting it together: multiple regression
+
+---
+
+# Reading the numbers: p-values
+
+.pull-left[
+Each coefficient in a regression comes with a **p-value**.
+
+- We start by assuming the variable has **no effect** on price once the others are accounted for (the *null hypothesis*)
+- The p-value is the chance of seeing an effect at least as big as ours **if that assumption were true**
+- **Small p-value** = our result would be very unlikely if there were no real effect
+]
+
+.pull-right[
+We use a **5% significance level**:
+
+- **p &lt; 0.05**: evidence of a real relationship, so we keep the variable
+- **p ≥ 0.05**: not enough evidence, so we drop it
+
+For example, overall condition had **p = 0.933**, so there is no evidence it affects price once size and quality are known.
+
+A p-value does **not** tell us how *big* or how *important* an effect is. That comes from the coefficient.
+]
+
+---
+
+# Our final model
+
+We started with area, bedrooms, overall quality, overall condition, kitchens and bathrooms. **Overall condition and bathrooms were not significant** at the 5% level, so we dropped them.
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Term &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Estimate ($) &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Std. error &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; t &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; p-value &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Intercept &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -55321.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5753.6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -9.62 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Area (per sq ft) &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 75.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 33.80 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Bedrooms &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -11667.6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1121.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -10.41 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Overall quality (per point) &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 29676.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 698.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 42.52 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Kitchens &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -23616.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3673.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -6.43 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; 0.001 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;br&gt;
+
+**R² = 0.747**: the model explains about **75%** of the variation in price (the full six-variable model gave 0.747, so the dropped variables added almost nothing).
+
+---
+
+# What the coefficients tell us
+
+Holding the other variables constant:
+
+- **Overall quality** is the strongest effect: each extra point adds about **$29,677** (t ≈ 42.5)
+
+- **Area**: each extra square foot adds about **$75.49**
+
+- **Bedrooms**: each extra bedroom *lowers* the price by about **$11,668**
+
+- **Kitchens**: each extra kitchen *lowers* the price by about **$23,616**
+
+--
+
+**Why negative?** The model already controls for area. For two houses of the *same size*, more bedrooms means smaller rooms. A second kitchen often signals a house split into flats or an older conversion, which buyers may value less.
+
+The intercept (-$55,321) has no real meaning, since no house has zero area.
+
+---
+
+# Checking the model
+
+.pull-left[
+&lt;img src="real-presentation_files/figure-html/resid-fitted-1.png" alt="" width="100%" /&gt;
+]
+
+.pull-right[
+&lt;img src="real-presentation_files/figure-html/resid-hist-1.png" alt="" width="100%" /&gt;
+]
+
+- Residuals are centred on zero and roughly symmetric, but **spread out more for expensive houses**
+- Typical prediction error (residual standard error): about **$40,240**
+
+---
+
+# Conclusions and limitations
+
+.pull-left[
+### What we found
+
+- **Quality and size** drive house prices in Ames most strongly
+- Together, area, bedrooms, quality and kitchens explain about **75%** of price variation
+- Newer and remodelled houses sell for more, but less strongly than size
+- More bedrooms or kitchens *at the same size* go with lower prices
+]
+
+.pull-right[
+### Limitations
+
+- **Location** (neighbourhood) was not included and likely explains much of the remaining ~25%
+- Wider spread for expensive houses: a log-price model might fit better
+- Bedrooms and area are correlated, which makes their separate effects harder to read
+- One town, sales from 2006 to 2010 only: results may not generalise
+]
+
+---
+
+class: inverse, center, middle
+
+# Thank you!
+
+## Questions?
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+  "ratio": "16:9",
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
